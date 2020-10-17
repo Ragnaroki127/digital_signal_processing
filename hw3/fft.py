@@ -38,17 +38,24 @@ def ifft_custom(X_k, N):
         x_n = np.append(x1_n, x2_n, axis=0)
         return x_n
 
-def self_correlate(x_n, N):
+def self_correlate_val(x_n, N):
     X_k = fft_custom(x_n, N)
     X_p = 1 / N * np.abs(X_k)**2
     corr = np.real(ifft_custom(X_p, N))
     return corr
 
 
+def self_correlate(x_n, N):
+    r_m = np.zeros(N)
+    for i in range(N):
+        x_n_shift = np.roll(x_n, -i)
+        r_m[i] = 1 / N * x_n.dot(x_n_shift)
+    return r_m
+
 if __name__ == "__main__":
     N = 2 ** 14
-    x = np.arange(0, 2 * np.pi, 2 * np.pi / N)
-    x_n = np.sin(2 * x) + np.cos(5 * x)
+    x = np.arange(0, 2, 2 / N)
+    x_n = np.sin(2 * np.pi * 2 * x) + np.cos(2 * np.pi * 5 * x)
 
     X_k1 = fft_custom(x_n, N)
 
@@ -56,33 +63,39 @@ if __name__ == "__main__":
 
     x_n_inverse = np.real(ifft_custom(X_k1, N))
 
-    plt.figure(1)
-    plt.plot(x, np.abs(X_k1), 'b-')
-    plt.xlabel('frequency')
+    plt.figure(1, figsize=(20, 10))
+    plt.plot(np.arange(N)[:N  // 2] / 2, np.log10(np.abs(X_k1))[:N // 2], 'b-')
+    plt.xlabel('frequency(Hz)')
     plt.ylabel('amplitude')
     plt.title('Frequency domain using custom FFT function')
 
-    plt.figure(2)
-    plt.plot(x, np.abs(X_k2), 'b-')
-    plt.xlabel('frequency')
+    plt.figure(2, figsize=(20, 10))
+    plt.plot(np.arange(N)[:N // 2]  / 2, np.log10(np.abs(X_k2))[:N // 2], 'b-')
+    plt.xlabel('frequency(Hz)')
     plt.ylabel('amplitude')
     plt.title('Frequency domain using np.fft.fft')
 
-    plt.figure(3)
+    plt.figure(3, figsize=(20, 10))
     plt.plot(x, x_n_inverse, 'r-')
     plt.xlabel('time')
     plt.ylabel('amplitude')
     plt.title('Time domain using custom IFFT function')
 
-    plt.figure(4)
+    plt.figure(4, figsize=(20, 10))
     plt.plot(x, x_n, 'y-')
     plt.xlabel('time')
     plt.ylabel('amplitude')
     plt.title('Original Signal')
 
-    plt.figure(5)
-    plt.plot(x, self_correlate(x_n, N), 'g-')
+    plt.figure(5, figsize=(20, 10))
+    plt.plot(np.arange(N), self_correlate(x_n, N), 'g-')
     plt.xlabel('m')
     plt.ylabel('amplitude')
     plt.title('Self-correlation function')
+
+    plt.figure(6, figsize=(20, 10))
+    plt.plot(np.arange(N), self_correlate_val(x_n, N), 'g-')
+    plt.xlabel('m')
+    plt.ylabel('amplitude')
+    plt.title('Self-correlation validation function')
     plt.show()
