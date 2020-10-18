@@ -58,4 +58,90 @@
         \caption{根据功率谱原理得到的自相关函数}\label{fig:val}
     \end{figure} \par
     图\ref{fig:original}为原信号的时域表示，图\ref{fig:self}为通过根据定义计算的自相关函数得到的自相关函数谱，图\ref{fig:val}为通过功率谱方法估计的自相关函数。可以看到原信号的自相关函数关于频谱中心对称，与理论相符合。
+
+    \section{}
+    定义原信号序列为：
+    \begin{equation*}
+        f(n) = 0.8\sin(2\pi\times 20n) + \cos(2\pi\times 50n) + 1.5\sin(2\pi\times 100n) + \epsilon
+    \end{equation*} \par
+    其中$\epsilon$为满足标准正太分布的随机噪声。信号长度为2s，采样点数为1024点，即采样频率为512Hz。该信号在时域的图像如下图所示：
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{Figure_7.jpg}
+        \caption{原信号的时域表示}
+    \end{figure}
+    对原信号进行补0操作，再求得自相关函数谱如下图：
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{Figure_8.jpg}
+        \caption{原信号的自相关谱}
+    \end{figure} \par
+    对该自相关谱做FFT，得到信号的功率谱图如下：
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{Figure_9.jpg}
+        \caption{自相关法得到的信号功率谱}
+    \end{figure} \par
+    可以清楚地看到功率谱在$f=20,50,100Hz$处出现峰值，这与原始信号的定义一致。
+    接着对自相关谱进行时域加窗，窗长为1884点，即滤去两侧各100点的自相关谱信号，得到新的功率谱如下：
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{Figure_10.jpg}
+        \caption{加窗后的信号功率谱}
+    \end{figure} \par
+    信号的功率谱变得更为平滑，且出现了$sinc$函数特征，这是加矩形窗的结果。加窗前的功率谱方差为0.594，而加窗后的功率谱方差为0.287，功率谱方差有较大改善，但频谱分辨率也有降低。
+
+    \section{}
+    实现了对信号的Welch平滑改进，原信号长度为1024点，程序中对信号进行分段操作，每一段的长度为128点，两端信号的重合长度为64点，信号共被分为15段。得到的功率谱如下图：
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{Figure_11.jpg}
+        \caption{Welch平滑改进后的功率谱}
+    \end{figure} \
+    该频谱的方差为0.536，对比原始的功率谱方差有一定改进但同时功率谱的分辨率变得较差。
+
+    \section{}
+    假设某信号具有两个极为接近的频率峰值$f_1=100Hz$，$f_2=100.2Hz$，设该信号的表达式为：
+    \begin{equation*}
+        f(n)=0.8\sin(2\pi\times 100n)+1.2\cos(2\pi\times 100.2n)+\epsilon
+    \end{equation*} \par
+    该信号的时域图像如下：
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{Figure_12.jpg}
+        \caption{原信号的功率谱}
+    \end{figure} \par
+    根据周期图法得到信号的功率谱如下，可见两个频谱峰无法分辨：
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\textwidth]{Figure_13.jpg}
+        \caption{原信号的功率谱}
+    \end{figure} \par
+    现试着从以下三个方面对时域信号进行操作，探讨能否分辨两个频率峰：\par
+    \begin{enumerate}
+        \item 增加采样频率 \\
+        对信号的采样频率增加16倍，即采样频率为8192Hz，得到新的功率谱在90到110Hz的图像如下：
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.6\textwidth]{Figure_14.jpg}
+            \caption{增加采样频率后的信号功率谱}
+        \end{figure} \par
+        可见两个峰值仍无法分辨，改种方法并不能提高频谱分辨率。
+        \item 维持采样频率，增加信号实际长度 \\
+        设定采样的信号长度为原信号的16倍，维持采样频率不变，得到的功率谱在90Hz到110Hz的图像如下：
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.6\textwidth]{Figure_15.jpg}
+            \caption{增加信号长度后的功率谱}
+        \end{figure} \par
+        这种方法成功地将两个谱峰分辨开，说明该方法可以有效地提高频谱分辨率。通过对两个峰值的解算可以得到两个峰值对应的频率正是100Hz和100.2Hz，说明改种方法可以准确地表征频率。
+        \item 维持采样频率，用补0增加信号实际长度 \\
+        将信号补0至原信号长度的16倍，得到新的功率谱在90Hz到110Hz的图像如下：
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.6\textwidth]{Figure_16.jpg}
+            \caption{时域补0后得到的的功率谱}
+        \end{figure} \par
+        该种方法得到的频谱图更为光滑，分辨率更低，因而无法分辨两个十分接近的谱峰。
+    \end{enumerate}
 \end{document}
