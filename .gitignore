@@ -6,3 +6,6 @@ __pycache__/*
 *.gz
 *.png
 *.jpg
+*.mat
+*.npy
+*.wav
